@@ -63,7 +63,6 @@ contract EstatesContract {
         sallings[_Id].onSale = false;
     }
 
-
     function buyHouse(uint _houseId) public payable {
         require(msg.sender != houseArrays[_houseId].owner);
         require(sallings[_houseId].onSale == true);
@@ -71,13 +70,8 @@ contract EstatesContract {
         
         sallings[_houseId].transfered = true;
         client = msg.sender;
-
-        // changeOwnership(_houseId, msg.sender);
     }
 
-    //     • возможность возврата средств отправителю, если продавец не подтвердил и закончился срок продажи
-
-    // исправить так, чтобы вызывалась продавцом
     function changeOwnership(uint _houseId) public  {
         require(msg.sender != houseArrays[_houseId].owner);
         require(sallings[_houseId].transfered == true);
