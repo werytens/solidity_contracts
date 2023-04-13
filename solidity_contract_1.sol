@@ -35,9 +35,9 @@ contract EstatesContract {
         sallings.push(Salling(0, false, 0, 0, false));
     }
 
-    function newHouseRegister(uint _id, address _owner, uint _square, uint _years) public {
+    function newHouseRegister(address _owner, uint _square, uint _years) public {
         require(msg.sender == admin);
-        houseArrays.push(Estates(_id, _owner, _square, _years));
+        houseArrays.push(Estates(houseArrays.length, _owner, _square, _years));
         sallings.push(Salling(0, false, 0, 0, false));
     } 
 
