@@ -52,6 +52,8 @@ contract EstatesContract {
         estateCount.push(estateCount.length);
     } 
 
+
+// warning
     function goOnSale(uint _id, uint _seconds, uint _price) public {
         require(!_sallings[msg.sender][_id].onSale, "Now on sale");
 
