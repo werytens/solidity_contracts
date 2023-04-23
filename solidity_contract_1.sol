@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
-pragma solidity > 0.7.0;
+pragma solidity >= 0.7.0;
 
 /**
  * @title Test
@@ -11,7 +11,6 @@ contract EstatesContract {
 
     struct Estates {
         uint id;
-        address owner;
         uint square;
         uint yearsOfExpluatation;
     }
@@ -21,70 +20,78 @@ contract EstatesContract {
         bool onSale;
         uint onSaleTime;
         uint price;
-
-        bool transfered;
     }
 
-    Estates[] public houseArrays;
-    Salling[] public sallings;
+    struct Clients {
+        uint id;
+        uint price;
+    }
+        
+    mapping (address => Estates[]) _estates;
+    address[] _owners;
+    uint[] estateCount;
 
-    address client;
+    mapping (address => Salling[]) _sallings;
+
+    mapping (address => Clients[]) _clients;
+    address[] clients;
+    
+    
 
     constructor() {
-        houseArrays.push(Estates(0, 0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2, 50, 7));
-        sallings.push(Salling(0, false, 0, 0, false));
+        _estates[0x5B38Da6a701c568545dCfcB03FcB875f56beddC4].push(Estates(0, 100, 7));
+        _sallings[msg.sender].push(Salling(0, false, 0, 0));
+        _owners.push(0x5B38Da6a701c568545dCfcB03FcB875f56beddC4);
     }
 
     function newHouseRegister(address _owner, uint _square, uint _years) public {
         require(msg.sender == admin);
         require(_square > 0);
-        
-        houseArrays.push(Estates(houseArrays.length, _owner, _square, _years));
-        sallings.push(Salling(0, false, 0, 0, false));
+        require(_owner != address(0));
+
+        _estates[_owner].push(Estates(estateCount.length, _square, _years));
+        estateCount.push(estateCount.length);
     } 
 
-    function goOnSale(uint _Id, uint _SecondsCount, uint _Price) public {
-        require(houseArrays[_Id].owner == msg.sender);
-        require(sallings[_Id].onSale == false);
+    function goOnSale(uint _id, uint _seconds, uint _price) public {
+        require(_sallings[msg.sender][_id].onSale != true);
 
-
-        sallings[_Id].onSale = true;
-        sallings[_Id].onSaleTime = _SecondsCount;
-        sallings[_Id].price = _Price;
+        _sallings[msg.sender].push(Salling(_id, true, _seconds, _price));
     }
 
-    function cancelSale(uint _Id) public payable  {
-        require(msg.sender != client);
-        require(houseArrays[_Id].owner == msg.sender);
-        require(sallings[_Id].onSale == false);
+    function newClientAdd(uint _id, uint _price) public  payable  {
+        require(msg.value >= _price);
+        require(msg.value >= _sallings[_owners[_id]][_id].price);
 
-        if (sallings[_Id].transfered == true) {
-            payable(client).transfer(sallings[_Id].price * 10**18);
+        _clients[msg.sender].push(Clients(_id, _price));
+        clients.push(msg.sender);
+
+        payable(msg.sender).transfer(_price);
+    }
+
+    function changeOwnership(uint id) public payable {
+        uint mostHighPrice = 0;
+        address clientWhoWin;
+        for (uint index = 0; index < clients.length; index++) {
+            address client = clients[index];
+
+            if (_clients[client][index].price > mostHighPrice) {
+                mostHighPrice = _clients[client][index].price;
+                clientWhoWin = client;
+            } else {
+                payable(client).transfer(_clients[client][index].price);
+                _clients[client][index] = Clients(0, 0);
+            }
         }
 
-        sallings[_Id].onSale = false;
-    }
-
-    function buyHouse(uint _houseId) public payable {
-        require(msg.sender != houseArrays[_houseId].owner);
-        require(sallings[_houseId].onSale == true);
-        require(msg.value == (sallings[_houseId].price * 10**18));
-        
-        sallings[_houseId].transfered = true;
-        client = msg.sender;
-    }
-
-    function changeOwnership(uint _houseId) public  {
-        require(msg.sender != houseArrays[_houseId].owner);
-        require(sallings[_houseId].transfered == true);
-
-        payable(houseArrays[_houseId].owner).transfer(sallings[_houseId].price * 10**18);
-
-        houseArrays[_houseId].owner = msg.sender;
-    }
-
-
-    function checkAll() public view returns (Estates[] memory) {
-        return houseArrays;
+        address owner = _owners[id];
+        _estates[clientWhoWin][id] = _estates[owner][id];
+        delete _estates[owner][id];
     }
 }
+
+// contract HouseRent is EstatesContract {
+//     function houseRent() public {
+
+//     }
+// }
