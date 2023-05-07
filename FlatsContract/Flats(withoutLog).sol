@@ -87,58 +87,46 @@ contract EstatesContract {
     // Финальный перевод средств + аукцион
     function finalPurshate(uint _id) public payable  {
         address nowHouseOwner = getHouserOwner(_id);
+        require(nowHouseOwner == msg.sender, "You didt own this house.");
 
-        if (nowHouseOwner == msg.sender) {
-            address bestClient = address(0);
-            uint bestPrice = 0;
+        address bestClient = address(0);
+        uint bestPrice = 0;
 
-            for (uint index = 0; index < clientsArray.length; index++) {
-                for (uint j = 0; j < _clients[clientsArray[index]].length; j++) {
-                    if (_clients[clientsArray[index]][j].id == _id) {
-                        if (_clients[clientsArray[index]][_id].price > bestPrice) {
-                            bestClient = clientsArray[index];
-                            bestPrice = _clients[clientsArray[index]][_id].price;
-                        } 
-                    }
+
+        for (uint index = 0; index < clientsArray.length; index++) {
+            for (uint j = 0; j < _clients[clientsArray[index]].length; j++) {
+                if (_clients[clientsArray[index]][j].id == _id) {
+                    if (_clients[clientsArray[index]][_id].price > bestPrice) {
+                        bestClient = clientsArray[index];
+                        bestPrice = _clients[clientsArray[index]][_id].price;
+                    } 
                 }
             }
-
-            // console.log("Winner: ", bestClient, "price: ", bestPrice);
-
-            // console.log("back cash:");
-
-            for (uint index = 0; index < clientsArray.length; index++) {
-                for (uint j = 0; j < _clients[clientsArray[index]].length; j++) {
-                    if (_clients[clientsArray[index]][j].id == _id) {
-                        if (_clients[clientsArray[index]][_id].price != bestPrice) {
-                            // console.log("lost: ", clientsArray[index], "price:", _clients[clientsArray[index]][_id].price);
-                            payable(clientsArray[index]).transfer(_clients[clientsArray[index]][_id].price * 10**18);
-                        } 
-                    }
-                }
-            }  
-
-            
-            
-            _estates[bestClient].push(Estates(_id, _estates[nowHouseOwner][_id].square, _estates[nowHouseOwner][_id].yearsOfExpluatation));
-            _owners[_id] = bestClient;
-
-            _sallings[bestClient][_id].id = _id;
-            _sallings[bestClient][_id].onSale = false;
-            _sallings[bestClient][_id].onSaleTime = 0;
-            _sallings[bestClient][_id].price = 0;
-
-            
-
-            payable(msg.sender).transfer(bestPrice * 10**18);
-            _estates[nowHouseOwner][_id].id = 999999999999999999999999;
-            _estates[nowHouseOwner][_id].square = 0;
-            _estates[nowHouseOwner][_id].yearsOfExpluatation = 0;
-
-            // console.log("Success!");
-        } else {
-            // console.log("You did`t own this house!");
         }
+
+        for (uint index = 0; index < clientsArray.length; index++) {
+            for (uint j = 0; j < _clients[clientsArray[index]].length; j++) {
+                if (_clients[clientsArray[index]][j].id == _id) {
+                    if (_clients[clientsArray[index]][_id].price != bestPrice) {
+                        payable(clientsArray[index]).transfer(_clients[clientsArray[index]][_id].price * 10**18);
+                    } 
+                }
+            }
+        }    
+            
+        payable(msg.sender).transfer(bestPrice * 10**18);
+
+        _estates[bestClient].push(Estates(_id, _estates[nowHouseOwner][_id].square, _estates[nowHouseOwner][_id].yearsOfExpluatation));
+        _sallings[bestClient].push(Salling(_id, false, 0, 0));
+        _owners[_id] = bestClient;
+
+        _estates[msg.sender][_id].id = 999999999;
+        _estates[msg.sender][_id].square = 0;
+        _estates[msg.sender][_id].yearsOfExpluatation = 0;
+        _sallings[msg.sender][_id].id = 999999999;
+        _sallings[msg.sender][_id].onSale = false;
+        _sallings[msg.sender][_id].onSaleTime = 0;
+        _sallings[msg.sender][_id].price = 0;
     }
 
     function cancelSell(uint _id) public payable {
@@ -149,7 +137,6 @@ contract EstatesContract {
                 for (uint j = 0; j < _clients[clientsArray[index]].length; j++) {
                     if (_clients[clientsArray[index]][j].id == _id) {
                         payable(clientsArray[index]).transfer(_clients[clientsArray[index]][j].price * 10**18);
-                        // console.log("Sucess!");
                     }
                 }
             }
