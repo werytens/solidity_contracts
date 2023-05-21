@@ -165,11 +165,13 @@ contract HouseRent is EstatesContract {
     struct Rents {
         uint id;
         uint rent_price;
-        uint ren_time;
+        uint rent_days;
 
         address client;
 
         bool active;
+
+        uint256 timestamp;
     }
     
     mapping (address => Rents[]) _rents;
@@ -185,21 +187,27 @@ contract HouseRent is EstatesContract {
     function addToRent(uint _id, uint _price, uint _rentDays) public {
         require(msg.sender == getHouserOwner(_id), "u dont own this house");
 
-        if (getHouseRent(_id).active == true || getHouseRent(_id).client != address(0)) {} else {
-            _rents[msg.sender].push(Rents(_id, _price, _rentDays, address(0), true));
-        }
+        _rents[msg.sender].push(Rents(_id, _price, _rentDays, address(0), true, 0));
     }
 
-    function addClientForRent(uint _id) public payable  {
+    function addClientForRent(uint _id) public payable returns (uint) {
         require(msg.sender != getHouserOwner(_id), "You owner of this house");
         require(getHouseRent(_id).active == true, "This house not on rent");
-        require(msg.value >= getHouseRent(_id).rent_price, "Msg. Value!!!");
+        require(msg.value >= (getHouseRent(_id).rent_price * 10**18), "Msg. Value!!!");
 
-        getHouseRent(_id).client = msg.sender;
+        for (uint index = 0; index < _estates[getHouserOwner(_id)].length; index++) {
+            if (_id == _rents[getHouserOwner(_id)][index].id) {
+                _rents[getHouserOwner(_id)][index].client = msg.sender;
+                _rents[getHouserOwner(_id)][index].timestamp = block.timestamp;
+            }
+        }
+
+        return  1;
     }
 
     function cancelRentByOwner(uint _id) public payable {
-        require(msg.sender != getHouserOwner(_id), "You owner of this house");
+        require(msg.sender == getHouserOwner(_id), "You owner of this house");
+        require(getHouseRent(_id).active == true, "This house not on rent");
 
         payable(getHouseRent(_id).client).transfer(getHouseRent(_id).rent_price * 10**18);
 
@@ -209,6 +217,7 @@ contract HouseRent is EstatesContract {
 
     function cancelRentByClient(uint _id) public payable {
         require(msg.sender == getHouseRent(_id).client, "u dont client of this house");
+        require(getHouseRent(_id).active == true, "This house not on rent");
 
         payable(getHouseRent(_id).client).transfer(getHouseRent(_id).rent_price * 10**18);
 
@@ -218,6 +227,7 @@ contract HouseRent is EstatesContract {
 
     function acceptRent(uint _id) public payable {
         require(msg.sender == getHouserOwner(_id), "You dont own this house");
+        require(getHouseRent(_id).active == true, "This house not on rent");
 
         payable(getHouserOwner(_id)).transfer(getHouseRent(_id).rent_price * 10**18);
 
@@ -227,6 +237,8 @@ contract HouseRent is EstatesContract {
 
     function endRent(uint _id) public {
         require(msg.sender == getHouserOwner(_id), "You dont own this house");
+        require(getHouseRent(_id).active == true, "This house not on rent");
+        require(block.timestamp >= getHouseRent(_id).timestamp + getHouseRent(_id).rent_days*1 days, "Not enough time has passed.");
 
         getHouseRent(_id).active = false;
         getHouseRent(_id).client = address(0);
