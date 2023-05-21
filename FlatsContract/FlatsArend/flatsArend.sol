@@ -137,7 +137,7 @@ contract EstatesContract {
         } else {}
     } 
 
-    function getHouserOwner (uint _id) internal  returns (address) {
+    function getHouserOwner (uint _id) internal returns (address) {
         address nowHouseOwner;
 
         for (uint index = 0; index < _owners.length; index++) {
@@ -150,6 +150,14 @@ contract EstatesContract {
 
         return nowHouseOwner;
     }
+
+    function getHouse(uint _id) internal returns (Estates memory) {
+        for (uint index = 0; index < _estates[getHouserOwner(_id)].length; index++) {
+            if (_id == _estates[getHouserOwner(_id)][index].id) {
+                return _estates[getHouserOwner(_id)][index];
+            }
+        }
+    }
 }
 
 contract HouseRent is EstatesContract {
@@ -158,15 +166,31 @@ contract HouseRent is EstatesContract {
         uint id;
         uint rent_price;
         uint ren_time;   
-    }
 
+        bool active;
+    }
+    
     mapping (address => Rents[]) _rents;
 
-    function addToRent(uint _id) public returns (address) {
-        require(msg.sender == getHouserOwner(_id));
+    function getHouseRent(uint _id) internal returns (Rents memory) {
+        for (uint index = 0; index < _estates[getHouserOwner(_id)].length; index++) {
+            if (_id == _rents[getHouserOwner(_id)][index].id) {
+                return _rents[getHouserOwner(_id)][index];
+            }
+        }
+    }
+    
+    function addToRent(uint _id, uint _price, uint _rentDays) public returns (address) {
+        require(msg.sender == getHouserOwner(_id), "u dont own this house");
+
+        _rents[msg.sender].push(Rents(_id, _price, _rentDays, true));
 
         return getHouserOwner(_id);
     }
 
-    
+    function addClientForRent(uint _id) public payable  {
+        require(msg.sender != getHouserOwner(_id), "You owner of this house");
+        require(getHouseRent(_id).active == true, "This house not on rent");
+        require(msg.value >= getHouseRent(_id).rent_price, "Msg. Value!!!");
+    }
 }
