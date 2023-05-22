@@ -28,8 +28,8 @@ contract Shops {
         uint balance;
     }
 
-    mapping (uint => shopStruct) public shopMapping;
-    uint[] shopNumbers;
+    mapping (address => shopStruct) public shopMapping;
+    address[] allShopArray;
 
 
 
@@ -71,13 +71,19 @@ contract Shops {
         adminMapping[0x5B38Da6a701c568545dCfcB03FcB875f56beddC4] = Admin("dimon", 500, "aboba337");
         allAdmins.push(0x5B38Da6a701c568545dCfcB03FcB875f56beddC4);
 
-        shopMapping[1] = shopStruct(1, "Saint Petersburg", 1500);
-        shopMapping[2] = shopStruct(2, "Dmitrov", 400);
-        shopMapping[3] = shopStruct(3, "Moscow", 1400);
-        shopMapping[4] = shopStruct(4, "Arkhangelsk", 900);
-        shopMapping[5] = shopStruct(5, "Irkutsk", 1000);
+        shopMapping[0x0A098Eda01Ce92ff4A4CCb7A4fFFb5A43EBC70DC] = shopStruct(1, "Saint Petersburg", 1500);
+        shopMapping[0xCA35b7d915458EF540aDe6068dFe2F44E8fa733c] = shopStruct(2, "Dmitrov", 400);
+        shopMapping[0x14723A09ACff6D2A60DcdF7aA4AFf308FDDC160C] = shopStruct(3, "Moscow", 1400);
+        shopMapping[0x583031D1113aD414F02576BD6afaBfb302140225] = shopStruct(4, "Arkhangelsk", 900);
+        shopMapping[0xdD870fA1b7C4700F2BD7f44238821C26f7392148] = shopStruct(5, "Irkutsk", 1000);
 
-        shopNumbers = [1, 2, 3, 4, 5];
+        allShopArray = [
+            0x0A098Eda01Ce92ff4A4CCb7A4fFFb5A43EBC70DC, 
+            0xCA35b7d915458EF540aDe6068dFe2F44E8fa733c, 
+            0x14723A09ACff6D2A60DcdF7aA4AFf308FDDC160C, 
+            0x583031D1113aD414F02576BD6afaBfb302140225, 
+            0xdD870fA1b7C4700F2BD7f44238821C26f7392148
+        ];
 
         
 
@@ -110,27 +116,27 @@ contract Shops {
         allAdmins.push(_newAdmin);
     }
 
-    function addNewShop(string memory _newShopCity, uint _newShopBalance, uint _newShopper) public {
+    function addNewShop(address _newShopAddress, string memory _newShopCity, uint _newShopBalance, uint _newShopper) public {
         require(checkOnAdmin(msg.sender) == 1, "u r not admin of this programm");
 
-        shopMapping[shopNumbers.length + 1] = shopStruct((shopNumbers.length + 1), _newShopCity, _newShopBalance);
-        shopNumbers.push(shopNumbers.length + 1);
+        shopMapping[_newShopAddress] = shopStruct((allShopArray.length + 1), _newShopCity, _newShopBalance);
+        allShopArray.push(_newShopAddress);
 
-        changeRole(_newShopper, "buyer", shopNumbers.length);
+        changeRole(_newShopper, "buyer", allShopArray.length);
     }
 
-    function deleteShop (uint _shopNumber) public {
+    function deleteShop (address _shopAddress) public {
         require(checkOnAdmin(msg.sender) == 1, "u r not admin of this programm");
 
-        shopMapping[_shopNumber] = shopStruct(0, "null", 0);
-        delete shopNumbers[_shopNumber];
-
         for (uint index = 0; index < allUsersArray.length; index++) {
-            if (userMapping[allUsersArray[index]].shopNumber == _shopNumber) {
+            if (userMapping[allUsersArray[index]].shopNumber == getShopNumber(_shopAddress)) {
                 userMapping[allUsersArray[index]].shopNumber = 0;
                 changeRole(index, "seller", 0);
             }
         }
+
+        shopMapping[_shopAddress] = shopStruct(0, "null", 0);
+        delete allShopArray[ getShopNumber(_shopAddress)];
     }
 
 
@@ -183,10 +189,22 @@ contract Shops {
         return flag;
     }
 
+    function getShopNumber(address _shopAddress) internal returns (uint) {
+        uint number;
+
+        for (uint index = 0; index < allShopArray.length; index++) {
+            if (_shopAddress == allShopArray[index]) {
+                number = shopMapping[allShopArray[index]].number;
+            }
+        }
+
+        return number;
+    }
+
     // System Functions For TESTING
     function logAllShops() public {
-        for (uint index = 0; index < shopNumbers.length + 1; index++) {
-            console.log(shopMapping[index].number, shopMapping[index].city, shopMapping[index].balance);
+        for (uint index = 0; index < allShopArray.length + 1; index++) {
+            console.log(shopMapping[allShopArray[index]].number, shopMapping[allShopArray[index]].city, shopMapping[allShopArray[index]].balance);
         }
     }
 
