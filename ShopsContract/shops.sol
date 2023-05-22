@@ -136,7 +136,7 @@ contract Shops {
         }
 
         shopMapping[_shopAddress] = shopStruct(0, "null", 0);
-        delete allShopArray[ getShopNumber(_shopAddress)];
+        delete allShopArray[getShopNumber(_shopAddress)];
     }
 
 
