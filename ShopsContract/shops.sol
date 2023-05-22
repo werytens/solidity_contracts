@@ -90,16 +90,18 @@ contract Shops {
 
 
     // Admin functionality
-    function changeRole(uint _id, string memory _role) public {
+    function changeRole(uint _id, string memory _role, uint _shopNumberOrZero) public {
         require(checkOnAdmin(msg.sender) == 1, "u r not admin of this programm");
         
         if (keccak256(abi.encodePacked(_role)) == keccak256(abi.encodePacked("seller")) || keccak256(abi.encodePacked(_role)) == keccak256(abi.encodePacked("buyer")) ) {
             userMapping[allUsersArray[_id]].role = _role;
+            if (keccak256(abi.encodePacked(_role)) == keccak256(abi.encodePacked("buyer"))) {
+                userMapping[allUsersArray[_id]].shopNumber = _shopNumberOrZero;
+            }
         } else {
             console.log("Role undefined");
         }
     } 
-
 
     function addNewAdming(address _newAdmin, string memory _newAdmingLogin, uint _newAdmingBalance, string memory _newAdminPassword) public {
         require(checkOnAdmin(msg.sender) == 1, "u r not admin of this programm");
@@ -108,12 +110,52 @@ contract Shops {
         allAdmins.push(_newAdmin);
     }
 
-    function addNewShop(string memory _newShopCity, uint _newShopBalance) public {
+    function addNewShop(string memory _newShopCity, uint _newShopBalance, uint _newShopper) public {
         require(checkOnAdmin(msg.sender) == 1, "u r not admin of this programm");
 
         shopMapping[shopNumbers.length + 1] = shopStruct((shopNumbers.length + 1), _newShopCity, _newShopBalance);
         shopNumbers.push(shopNumbers.length + 1);
+
+        changeRole(_newShopper, "buyer", shopNumbers.length);
     }
+
+    function deleteShop (uint _shopNumber) public {
+        require(checkOnAdmin(msg.sender) == 1, "u r not admin of this programm");
+
+        shopMapping[_shopNumber] = shopStruct(0, "null", 0);
+        delete shopNumbers[_shopNumber];
+
+        for (uint index = 0; index < allUsersArray.length; index++) {
+            if (userMapping[allUsersArray[index]].shopNumber == _shopNumber) {
+                userMapping[allUsersArray[index]].shopNumber = 0;
+                changeRole(index, "seller", 0);
+            }
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
