@@ -11,7 +11,6 @@ import "hardhat/console.sol";
 
 contract Shops {
 
-    address admin = 0x5B38Da6a701c568545dCfcB03FcB875f56beddC4;
     struct Admin {
         string login;
         uint balance;
@@ -19,6 +18,7 @@ contract Shops {
     }
 
     mapping (address => Admin) public adminMapping;
+    address[] allAdmins;
 
 
     // Shops System
@@ -66,16 +66,10 @@ contract Shops {
 
 
 
-    // Admin functionality
-    function changeRole() public {
-
-    } 
-
-
-
     // Constructor
     constructor() {
         adminMapping[0x5B38Da6a701c568545dCfcB03FcB875f56beddC4] = Admin("dimon", 500, "aboba337");
+        allAdmins.push(0x5B38Da6a701c568545dCfcB03FcB875f56beddC4);
 
         shopMapping[1] = shopStruct(1, "Saint Petersburg", 1500);
         shopMapping[2] = shopStruct(2, "Dmitrov", 400);
@@ -87,17 +81,76 @@ contract Shops {
 
         
 
-
         userMapping[0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2] = userStruct(0, "Alexandrova Alexandra Alexandrovna", 3, "alex", "first", "buyer", "Moscow", 150);
         userMapping[0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db] = userStruct(1, "Ruslanov Ruslan Ruslanovich", 0, "rus", "second", "seller", "Saint Petersburg", 70);
+
+        allUsersArray = [0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2, 0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db];
     }
 
 
+
+    // Admin functionality
+    function changeRole(uint _id, string memory _role) public {
+        require(checkOnAdmin(msg.sender) == 1, "u r not admin of this programm");
+        
+        if (keccak256(abi.encodePacked(_role)) == keccak256(abi.encodePacked("seller")) || keccak256(abi.encodePacked(_role)) == keccak256(abi.encodePacked("buyer")) ) {
+            userMapping[allUsersArray[_id]].role = _role;
+        } else {
+            console.log("Role undefined");
+        }
+    } 
+
+
+    function addNewAdming(address _newAdmin, string memory _newAdmingLogin, uint _newAdmingBalance, string memory _newAdminPassword) public {
+        require(checkOnAdmin(msg.sender) == 1, "u r not admin of this programm");
+
+        adminMapping[_newAdmin] = Admin(_newAdmingLogin, _newAdmingBalance, _newAdminPassword);
+        allAdmins.push(_newAdmin);
+    }
+
+    function addNewShop(string memory _newShopCity, uint _newShopBalance) public {
+        require(checkOnAdmin(msg.sender) == 1, "u r not admin of this programm");
+
+        shopMapping[shopNumbers.length + 1] = shopStruct((shopNumbers.length + 1), _newShopCity, _newShopBalance);
+        shopNumbers.push(shopNumbers.length + 1);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // System Functions For Checks
+    function checkOnAdmin(address _itsadmin) internal  returns (uint) {
+        uint flag = 0;
+
+        for (uint index = 0; index < allAdmins.length; index++) {
+            if (allAdmins[index] == _itsadmin) {
+                flag = 1;
+            }
+        }
+
+        return flag;
+    }
 
     // System Functions For TESTING
     function logAllShops() public {
         for (uint index = 0; index < shopNumbers.length + 1; index++) {
             console.log(shopMapping[index].number, shopMapping[index].city, shopMapping[index].balance);
+        }
+    }
+
+    function logAllRoles() public  {
+        for (uint index = 0; index < allUsersArray.length; index++) {
+            console.log(userMapping[allUsersArray[index]].id, userMapping[allUsersArray[index]].role);
         }
     }
 }
