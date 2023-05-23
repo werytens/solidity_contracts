@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.4.22 <0.9.0;
+pragma solidity >= 0.4.22 < 0.9.0;
 pragma experimental ABIEncoderV2;
 
 
@@ -25,8 +25,8 @@ contract Shops {
         uint number;
         string city;
         uint balance;
-        
-        shopRates[] rates;
+
+        uint[] sellers_ids;
     }
 
     mapping (address => shopStruct) public shopMapping;
@@ -38,8 +38,6 @@ contract Shops {
     struct userStruct {
         uint id;
         string fcs;
-
-        uint shopNumber;
 
         string login;
         bytes32 password;
@@ -57,13 +55,15 @@ contract Shops {
 
     // Constructor
     constructor() {
-        shopRates[] memory void;
+        uint256[] memory void;
 
-        shopMapping[0x0A098Eda01Ce92ff4A4CCb7A4fFFb5A43EBC70DC] = shopStruct(1, "Saint Petersburg", 100, void);
-        shopMapping[0xCA35b7d915458EF540aDe6068dFe2F44E8fa733c] = shopStruct(2, "Dmitrov",          100, void);
-        shopMapping[0x14723A09ACff6D2A60DcdF7aA4AFf308FDDC160C] = shopStruct(3, "Moscow",           100, void);
-        shopMapping[0x583031D1113aD414F02576BD6afaBfb302140225] = shopStruct(4, "Arkhangelsk",      100, void);
-        shopMapping[0xdD870fA1b7C4700F2BD7f44238821C26f7392148] = shopStruct(5, "Irkutsk",          100, void);
+        shopMapping[0x0A098Eda01Ce92ff4A4CCb7A4fFFb5A43EBC70DC] = shopStruct(1,     "Saint Petersburg",     100, void);
+        shopMapping[0xCA35b7d915458EF540aDe6068dFe2F44E8fa733c] = shopStruct(2,     "Dmitrov",              100, void);
+        shopMapping[0x14723A09ACff6D2A60DcdF7aA4AFf308FDDC160C] = shopStruct(3,     "Moscow",               100, void);
+        shopMapping[0x583031D1113aD414F02576BD6afaBfb302140225] = shopStruct(4,     "Arkhangelsk",          100, void);
+        shopMapping[0xdD870fA1b7C4700F2BD7f44238821C26f7392148] = shopStruct(5,     "Irkutsk",              100, void);
+
+        shopMapping[0xdD870fA1b7C4700F2BD7f44238821C26f7392148].sellers_ids = [1];
 
         allShopArray = [
             0x0A098Eda01Ce92ff4A4CCb7A4fFFb5A43EBC70DC, 
@@ -74,9 +74,9 @@ contract Shops {
         ];
 
         
-        userMapping[0x5B38Da6a701c568545dCfcB03FcB875f56beddC4] = userStruct(0, "Dmitriy Dmitriev Dmitrievuch",       0,    "dimon",    keccak256("adminPassword"),     "admin",     "Kaluga",           100);
-        userMapping[0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2] = userStruct(1, "Alexandrova Alexandra Alexandrovna", 3,    "alex",     keccak256("firstPassword"),     "buyer",     "Moscow",           100);
-        userMapping[0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db] = userStruct(2, "Ruslanov Ruslan Ruslanovich",        0,    "rus",      keccak256("secondPassword"),    "seller",    "Saint Petersburg", 100);
+        userMapping[0x5B38Da6a701c568545dCfcB03FcB875f56beddC4] = userStruct(0, "Dmitriy Dmitriev Dmitrievuch",          "dimon",    keccak256("adminPassword"),     "admin",     "Kaluga",           100);
+        userMapping[0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2] = userStruct(1, "Alexandrova Alexandra Alexandrovna",    "alex",     keccak256("firstPassword"),     "buyer",     "Moscow",           100);
+        userMapping[0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db] = userStruct(2, "Ruslanov Ruslan Ruslanovich",           "rus",      keccak256("secondPassword"),    "seller",    "Saint Petersburg", 100);
 
         allUsersArray = [0x5B38Da6a701c568545dCfcB03FcB875f56beddC4, 0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2, 0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db];
     }
@@ -106,8 +106,6 @@ contract Shops {
     // function addNewShop(address _newShopAddress, string memory _newShopCity, uint _newShopBalance, uint _newShopper) public onlyAdmins {
         // shopMapping[_newShopAddress] = shopStruct((allShopArray.length + 1), _newShopCity, _newShopBalance);
         // allShopArray.push(_newShopAddress); 
-
-        // shopRates[] memory void;
 
         // shopMapping[_newShopAddress] = shopStruct((allShopArray.length + 1), _newShopCity, _newShopBalance, void);
 
