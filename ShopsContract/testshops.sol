@@ -83,6 +83,18 @@ contract Shops {
 
 
 
+    // Requests
+    function requestForSeller() public onlyBuyers {
+        // TODO
+    }
+    function requestForBuyer() public onlySellers {
+        // TODO
+    }
+    function requestForAdmin() public {
+        // TODO
+    }
+    
+
 
     // Admin functionality
     // function changeRole(uint _id, string memory _role, uint _shopNumberOrZero) public {
@@ -165,6 +177,28 @@ contract Shops {
         }
         
         require(flag == 1, "u r not admin of this programm"); 
+        _;
+    }
+
+    modifier onlySellers() {
+        uint flag = 0;
+
+        if (keccak256(abi.encodePacked(userMapping[msg.sender].role)) == keccak256(abi.encodePacked("seller"))) {
+            flag = 1;
+        }
+        
+        require(flag == 1, "u r not seller of this programm"); 
+        _;
+    }
+
+    modifier onlyBuyers() {
+        uint flag = 0;
+
+        if (keccak256(abi.encodePacked(userMapping[msg.sender].role)) == keccak256(abi.encodePacked("buyer"))) {
+            flag = 1;
+        }
+        
+        require(flag == 1, "u r not buyer of this programm"); 
         _;
     }
         
