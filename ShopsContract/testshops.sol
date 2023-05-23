@@ -113,13 +113,12 @@ contract Shops {
         allRequests.push(id);
     }
 
-    function clearRequest(uint _requestId) public {
+    function clearRequest(uint _requestId) internal  {
         for (uint index = 0; index < allRequestsOwners.length; index++) {
             for (uint j = 0; j < userMapping[allRequestsOwners[index]].userRequests.length; j++) {
-                console.log(userMapping[allRequestsOwners[index]].userRequests[j]);
-                // if (userMapping[allRequestsOwners[index]].userRequests[j] == _requestId) {
-                    // console.log(requestMapping[allRequestsOwners[index]][_requestId].requestIsOpen);
-                // }
+                if (userMapping[allRequestsOwners[index]].userRequests[j] == _requestId) {
+                    requestMapping[allRequestsOwners[index]][_requestId].requestIsOpen == false;
+                }
             }
         }
     }
@@ -127,6 +126,36 @@ contract Shops {
     ////// Admin functionality
 
     // Request Acception
+
+    function requestAccept(uint _requestId) public onlyAdmins {
+        for (uint index = 0; index < allRequestsOwners.length; index++) {
+            for (uint j = 0; j < userMapping[allRequestsOwners[index]].userRequests.length; j++) {
+                if (userMapping[allRequestsOwners[index]].userRequests[j] == _requestId) {
+                    if (requestMapping[allRequestsOwners[index]][_requestId].requestIsOpen == false) {
+                        console.log("This request already closed!");
+                    } else {
+                        requestMapping[allRequestsOwners[index]][_requestId].requestIsOpen == false;
+
+                        // Change Role Function TODO
+                    }
+                }
+            }
+        }
+    }
+
+    function requestClose(uint _requestId) public onlyAdmins {
+        for (uint index = 0; index < allRequestsOwners.length; index++) {
+            for (uint j = 0; j < userMapping[allRequestsOwners[index]].userRequests.length; j++) {
+                if (userMapping[allRequestsOwners[index]].userRequests[j] == _requestId) {
+                    if (requestMapping[allRequestsOwners[index]][_requestId].requestIsOpen == false) {
+                        console.log("This request already closed!");
+                    } else {
+                        requestMapping[allRequestsOwners[index]][_requestId].requestIsOpen == false;
+                    }
+                }
+            }
+        }
+    }
 
     // function changeRole(uint _id, string memory _role, uint _shopNumberOrZero) public {
     //     require(checkOnAdmin(msg.sender) == 1, "u r not admin of this programm");
@@ -218,7 +247,7 @@ contract Shops {
             flag = 1;
         }
         
-        require(flag == 1, "u r not admin of this programm"); 
+        require(flag == 1, "u r also admin of this programm"); 
         _;
     }
 
