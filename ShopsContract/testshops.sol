@@ -112,7 +112,7 @@ contract Shops {
         // shopMapping[_newShopAddress] = shopStruct((allShopArray.length + 1), _newShopCity, _newShopBalance, void);
 
         // changeRole(_newShopper, "buyer", allShopArray.length);
-    }
+    // }
 
     // function deleteShop (address _shopAddress) public onlyAdmins {
     //     for (uint index = 0; index < allUsersArray.length; index++) {
