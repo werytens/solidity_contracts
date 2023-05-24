@@ -87,7 +87,7 @@ contract Shops {
 
 
 
-    // Requests For Change Role
+    // Requests
     struct requestForm {
         uint requestId;
         uint userId;
@@ -101,7 +101,13 @@ contract Shops {
     uint[] allRequests;
 
     function requestForSeller() public onlyBuyers { requestAdd("seller"); }
-    function requestForBuyer() public onlySellers { requestAdd("buyer"); }
+    function requestForBuyer() public onlySellers { 
+        // Input for something shop
+        // TODO
+        
+        
+        requestAdd("buyer"); 
+        }
     function requestForAdmin() public notAdmin { requestAdd("admin"); }
 
     function requestAdd(string memory _requestRole) internal {
@@ -124,8 +130,6 @@ contract Shops {
     }
 
     ////// Admin functionality
-
-    // Request (rfcr) Acception
 
     function roleRequestAccept(uint _requestId) public onlyAdmins {
         for (uint index = 0; index < allRequestsOwners.length; index++) {
@@ -161,68 +165,28 @@ contract Shops {
         userMapping[allUsersArray[_userId]].role = _role;
     }
 
-    // Shop Requests
+    // Shop Management
+    function addNewShop(address _shopAddress, string memory _city) public onlyAdmins {
+        uint[] memory void;
 
-    struct shopRequestForm {
-        uint requestId;
-        uint userId;
-
-        string requestType; // Add Shop / Delete Shop /// "create" / "delete"
-        bool requestIsOpen;
+        shopMapping[_shopAddress] = shopStruct(allShopArray.length, _city, 100, void);
+        allShopArray.push(_shopAddress);
     }
 
-    mapping (address => requestForm[]) public shopRequestMapping;
-    address[] shopRequestsOwners;
-    uint[] shopRequests;
+    function deleteShop(uint _id) public onlyAdmins {
+        uint[] memory void;
 
+        for (uint index = 0; index < shopMapping[allShopArray[_id]].sellers_ids.length; index++) {
+            changeRole(shopMapping[allShopArray[_id]].sellers_ids[index], "seller");
+        }
 
-    function requestToCreateShop() public onlySellers {
-        // TODO
+        shopMapping[allShopArray[_id]].number = 0;
+        shopMapping[allShopArray[_id]].city = "None";
+        shopMapping[allShopArray[_id]].balance = 0;
+        shopMapping[allShopArray[_id]].sellers_ids = void;
+
+        delete allShopArray[_id];
     }
-
-    function requestToDeleteShop() public onlySellers {
-        // TODO
-    }
-
-    function shopRequestAccept() public onlyAdmins {
-        // TODO
-    }
-
-    function shopRequestCancel() public onlyAdmins {
-        // TODO
-    }
-    
-    function addNewShop() internal {
-        // TODO
-    }
-
-    function deleteShop() internal {
-        // TODO
-    }
-
-    // function addNewShop(address _newShopAddress, string memory _newShopCity, uint _newShopBalance, uint _newShopper) public onlyAdmins {
-        // shopMapping[_newShopAddress] = shopStruct((allShopArray.length + 1), _newShopCity, _newShopBalance);
-        // allShopArray.push(_newShopAddress); 
-
-        // shopMapping[_newShopAddress] = shopStruct((allShopArray.length + 1), _newShopCity, _newShopBalance, void);
-
-        // changeRole(_newShopper, "buyer", allShopArray.length);
-    // }
-
-    // function deleteShop (address _shopAddress) public onlyAdmins {
-    //     for (uint index = 0; index < allUsersArray.length; index++) {
-    //         if (userMapping[allUsersArray[index]].shopNumber == getShopNumber(_shopAddress)) {
-    //             userMapping[allUsersArray[index]].shopNumber = 0;
-    //             changeRole(index, "seller", 0);
-    //         }
-    //     }
-
-    //     shopMapping[_shopAddress] = shopStruct(0, "null", 0);
-    //     delete allShopArray[getShopNumber(_shopAddress)];
-    // }
-
-
-
 
 
     // System Functionaliti
