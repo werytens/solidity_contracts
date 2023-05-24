@@ -87,7 +87,7 @@ contract Shops {
 
 
 
-    // Requests
+    // Requests For Change Role
     struct requestForm {
         uint requestId;
         uint userId;
@@ -125,9 +125,9 @@ contract Shops {
 
     ////// Admin functionality
 
-    // Request Acception
+    // Request (rfcr) Acception
 
-    function requestAccept(uint _requestId) public onlyAdmins {
+    function roleRequestAccept(uint _requestId) public onlyAdmins {
         for (uint index = 0; index < allRequestsOwners.length; index++) {
             for (uint j = 0; j < userMapping[allRequestsOwners[index]].userRequests.length; j++) {
                 if (userMapping[allRequestsOwners[index]].userRequests[j] == _requestId) {
@@ -136,14 +136,14 @@ contract Shops {
                     } else {
                         requestMapping[allRequestsOwners[index]][_requestId].requestIsOpen == false;
 
-                        // Change Role Function TODO
+                        changeRole(requestMapping[allRequestsOwners[index]][_requestId].userId, requestMapping[allRequestsOwners[index]][_requestId].roleToRequest);
                     }
                 }
             }
         }
     }
 
-    function requestClose(uint _requestId) public onlyAdmins {
+    function roleRequestClose(uint _requestId) public onlyAdmins {
         for (uint index = 0; index < allRequestsOwners.length; index++) {
             for (uint j = 0; j < userMapping[allRequestsOwners[index]].userRequests.length; j++) {
                 if (userMapping[allRequestsOwners[index]].userRequests[j] == _requestId) {
@@ -157,23 +157,48 @@ contract Shops {
         }
     }
 
-    // function changeRole(uint _id, string memory _role, uint _shopNumberOrZero) public {
-    //     require(checkOnAdmin(msg.sender) == 1, "u r not admin of this programm");
-        
-    //     if (keccak256(abi.encodePacked(_role)) == keccak256(abi.encodePacked("seller")) || keccak256(abi.encodePacked(_role)) == keccak256(abi.encodePacked("buyer")) ) {
-    //         userMapping[allUsersArray[_id]].role = _role;
-    //         if (keccak256(abi.encodePacked(_role)) == keccak256(abi.encodePacked("buyer"))) {
-    //             userMapping[allUsersArray[_id]].shopNumber = _shopNumberOrZero;
-    //         }
-    //     } else {
-    //         console.log("Role undefined");
-    //     }
-    // } 
+    function changeRole(uint _userId, string memory _role) internal {
+        userMapping[allUsersArray[_userId]].role = _role;
+    }
 
-    // function addNewAdming(address _newAdmin, string memory _newAdmingLogin, uint _newAdmingBalance, string memory _newAdminPassword) public onlyAdmins {
-    //     adminMapping[_newAdmin] = Admin(_newAdmingLogin, _newAdmingBalance, _newAdminPassword);
-    //     allAdmins.push(_newAdmin);
-    // }
+    // Shop Requests
+
+    struct shopRequestForm {
+        uint requestId;
+        uint userId;
+
+        string requestType; // Add Shop / Delete Shop /// "create" / "delete"
+        bool requestIsOpen;
+    }
+
+    mapping (address => requestForm[]) public shopRequestMapping;
+    address[] shopRequestsOwners;
+    uint[] shopRequests;
+
+
+    function requestToCreateShop() public onlySellers {
+        // TODO
+    }
+
+    function requestToDeleteShop() public onlySellers {
+        // TODO
+    }
+
+    function shopRequestAccept() public onlyAdmins {
+        // TODO
+    }
+
+    function shopRequestCancel() public onlyAdmins {
+        // TODO
+    }
+    
+    function addNewShop() internal {
+        // TODO
+    }
+
+    function deleteShop() internal {
+        // TODO
+    }
 
     // function addNewShop(address _newShopAddress, string memory _newShopCity, uint _newShopBalance, uint _newShopper) public onlyAdmins {
         // shopMapping[_newShopAddress] = shopStruct((allShopArray.length + 1), _newShopCity, _newShopBalance);
@@ -195,34 +220,6 @@ contract Shops {
     //     shopMapping[_shopAddress] = shopStruct(0, "null", 0);
     //     delete allShopArray[getShopNumber(_shopAddress)];
     // }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
