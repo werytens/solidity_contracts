@@ -30,7 +30,8 @@ contract Shops {
     shopRates[] rates;
 
     function addNewRate(uint _shopNumber, uint _shopRate, string memory _rateComment) public onlySellers {
-        // TODO CHECKS
+        require(_shopRate > 0 && _shopRate <= 5, "your grade must be > 0 and < 5");
+        require(checkForAlreadyHaveRateOfThisShop(_shopNumber) == 0, "u have already appreciated the work of this store");
         
         shopRates storage newRate = rates.push();
 
@@ -135,17 +136,10 @@ contract Shops {
     constructor() {
         uint[] memory void;
 
-        // shopRates[] memory shopRatesVoid;
-        // s
-
         shopMapping[0x0A098Eda01Ce92ff4A4CCb7A4fFFb5A43EBC70DC].number = 1;
         shopMapping[0x0A098Eda01Ce92ff4A4CCb7A4fFFb5A43EBC70DC].city = "Saint Petersburg";
         shopMapping[0x0A098Eda01Ce92ff4A4CCb7A4fFFb5A43EBC70DC].balance = 100;
         shopMapping[0x0A098Eda01Ce92ff4A4CCb7A4fFFb5A43EBC70DC].sellers_ids = void;
-
-        // Rates storage RatesVoid = 
-
-        // shopMapping[0x0A098Eda01Ce92ff4A4CCb7A4fFFb5A43EBC70DC].rates = new
 
         
         shopMapping[0x0A098Eda01Ce92ff4A4CCb7A4fFFb5A43EBC70DC] = shopStruct(1,     "Saint Petersburg",     100, void);
@@ -346,5 +340,17 @@ contract Shops {
                 return 1;
             } else {return 0;}
         }
+    }
+
+    function checkForAlreadyHaveRateOfThisShop(uint shopId) internal returns (uint) {
+        uint flag = 0;
+
+        for (uint index = 0; index < rates.length; index++) {
+            if (rates[index].shopNumber == shopId && rates[index].userId == getUserIdForAddress(msg.sender)) {
+                flag = 1;
+            }
+        }
+
+        return flag;
     }
 }
