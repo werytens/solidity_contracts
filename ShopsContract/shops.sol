@@ -1,6 +1,7 @@
-// SPDX-License-Identifier: GPL-3.0
+// SPDX-License-Identifier: MIT
+pragma solidity >= 0.4.22 < 0.9.0;
+pragma experimental ABIEncoderV2;
 
-pragma solidity >=0.7.0 <0.9.0;
 
 import "hardhat/console.sol";
 
@@ -10,22 +11,99 @@ import "hardhat/console.sol";
  */
 
 contract Shops {
+    // Shops System
+    struct shopRates {
+        uint userId;
+        uint rateId;
 
-    struct Admin {
-        string login;
-        uint balance;
-        string password; 
+        uint shopNumber;
+        uint shopRate;
+        string rateComment;
+
+        sellersComments[] sellers_comments;
+        buyersAccepts[] buyers_accepts;
+
+        address[] allSellersCommentsOwners;
+        address[] allBuyersAcceptsOwners;
     }
 
-    mapping (address => Admin) public adminMapping;
-    address[] allAdmins;
+    shopRates[] rates;
+
+    function addNewRate(uint _shopNumber, uint _shopRate, string memory _rateComment) public onlySellers {
+        require(_shopRate > 0 && _shopRate <= 5, "your grade must be > 0 and < 5");
+        require(checkForAlreadyHaveRateOfThisShop(_shopNumber) == 0, "u have already appreciated the work of this store");
+        
+        shopRates storage newRate = rates.push();
+
+        sellersComments storage selcom = newRate.sellers_comments.push();
+        buyersAccepts storage buyacc = newRate.buyers_accepts.push();
+
+        address[] memory void;
+
+        newRate.userId = getUserIdForAddress(msg.sender);
+        newRate.rateId = rates.length;
+        newRate.shopNumber = _shopNumber;
+        newRate.shopRate = _shopRate;
+        newRate.rateComment = _rateComment;
+        newRate.allSellersCommentsOwners = void;
+        newRate.allBuyersAcceptsOwners = void;
+    }
+
+    function addCommentToRate(uint _rateId, string memory _rateComment) public onlySellers returns (uint) {
+        require(getUserIdForAddress(msg.sender) != rates[_rateId].userId, "U owner of this rate");
+
+        for (uint index = 0; index < rates[_rateId].allSellersCommentsOwners.length; index++) {
+            if (rates[_rateId].allSellersCommentsOwners[index] == msg.sender) {
+                console.log("u already have comment of this rate");
+                return 0;
+            }
+        }
+
+        sellersComments storage newComment = rates[_rateId].sellers_comments.push();
+
+        newComment.owner = msg.sender;
+        newComment.comment = _rateComment;
+        return 1;
+    }
+
+    function acceptRate(uint _rateId, bool _accept) public onlyBuyers returns (uint) {
+        require(getUserIdForAddress(msg.sender) != rates[_rateId].userId, "U owner of this rate");
+
+        for (uint index = 0; index < rates[_rateId].allSellersCommentsOwners.length; index++) {
+            if (rates[_rateId].allBuyersAcceptsOwners[index] == msg.sender) {
+                console.log("u already accept of this rate");
+                return 0;
+            }
+        }
+
+        buyersAccepts storage accept = rates[_rateId].buyers_accepts.push();
+
+        accept.owner = msg.sender;
+        accept.isAccept = _accept;
+        return 1;
+    }
+    
+
+    struct sellersComments {
+        string comment;
+
+        address owner;
+    }
+
+    struct buyersAccepts {
+        bool isAccept;
+
+        address owner;
+    }
+    
 
 
-    // Shops System
     struct shopStruct {
         uint number;
         string city;
         uint balance;
+
+        uint[] sellers_ids;
     }
 
     mapping (address => shopStruct) public shopMapping;
@@ -38,44 +116,39 @@ contract Shops {
         uint id;
         string fcs;
 
-        uint shopNumber;
-
-        string loggin;
-        string password;
+        string login;
+        bytes32 password;
 
         string role;
 
         string city;
         uint balance;
+
+        uint[] userRequests;
     }
 
-    struct shopRates {
-        uint userId;
-        uint rateId;
-
-        uint shopNumber;
-        uint shopRate;
-        string rateComment;
-    }
+    
 
     mapping (address => userStruct) public userMapping;
-    mapping (uint => shopRates) public rateMapping;
-
     address[] allUsersArray;
-    uint[] allRatesArray;
-
-
 
     // Constructor
     constructor() {
-        adminMapping[0x5B38Da6a701c568545dCfcB03FcB875f56beddC4] = Admin("dimon", 500, "aboba337");
-        allAdmins.push(0x5B38Da6a701c568545dCfcB03FcB875f56beddC4);
+        uint[] memory void;
 
-        shopMapping[0x0A098Eda01Ce92ff4A4CCb7A4fFFb5A43EBC70DC] = shopStruct(1, "Saint Petersburg", 1500);
-        shopMapping[0xCA35b7d915458EF540aDe6068dFe2F44E8fa733c] = shopStruct(2, "Dmitrov", 400);
-        shopMapping[0x14723A09ACff6D2A60DcdF7aA4AFf308FDDC160C] = shopStruct(3, "Moscow", 1400);
-        shopMapping[0x583031D1113aD414F02576BD6afaBfb302140225] = shopStruct(4, "Arkhangelsk", 900);
-        shopMapping[0xdD870fA1b7C4700F2BD7f44238821C26f7392148] = shopStruct(5, "Irkutsk", 1000);
+        shopMapping[0x0A098Eda01Ce92ff4A4CCb7A4fFFb5A43EBC70DC].number = 1;
+        shopMapping[0x0A098Eda01Ce92ff4A4CCb7A4fFFb5A43EBC70DC].city = "Saint Petersburg";
+        shopMapping[0x0A098Eda01Ce92ff4A4CCb7A4fFFb5A43EBC70DC].balance = 100;
+        shopMapping[0x0A098Eda01Ce92ff4A4CCb7A4fFFb5A43EBC70DC].sellers_ids = void;
+
+        
+        shopMapping[0x0A098Eda01Ce92ff4A4CCb7A4fFFb5A43EBC70DC] = shopStruct(1,     "Saint Petersburg",     100, void);
+        shopMapping[0xCA35b7d915458EF540aDe6068dFe2F44E8fa733c] = shopStruct(2,     "Dmitrov",              100, void);
+        shopMapping[0x14723A09ACff6D2A60DcdF7aA4AFf308FDDC160C] = shopStruct(3,     "Moscow",               100, void);
+        shopMapping[0x583031D1113aD414F02576BD6afaBfb302140225] = shopStruct(4,     "Arkhangelsk",          100, void);
+        shopMapping[0xdD870fA1b7C4700F2BD7f44238821C26f7392148] = shopStruct(5,     "Irkutsk",              100, void);
+
+        shopMapping[0xdD870fA1b7C4700F2BD7f44238821C26f7392148].sellers_ids = [1];
 
         allShopArray = [
             0x0A098Eda01Ce92ff4A4CCb7A4fFFb5A43EBC70DC, 
@@ -86,131 +159,198 @@ contract Shops {
         ];
 
         
+        userMapping[0x5B38Da6a701c568545dCfcB03FcB875f56beddC4] = userStruct(0, "Dmitriy Dmitriev Dmitrievuch",          "dimon",    keccak256("adminPassword"),     "admin",     "Kaluga",           100, void);
+        userMapping[0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2] = userStruct(1, "Alexandrova Alexandra Alexandrovna",    "alex",     keccak256("firstPassword"),     "buyer",     "Moscow",           100, void);
+        userMapping[0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db] = userStruct(2, "Ruslanov Ruslan Ruslanovich",           "rus",      keccak256("secondPassword"),    "seller",    "Saint Petersburg", 100, void);
 
-        userMapping[0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2] = userStruct(0, "Alexandrova Alexandra Alexandrovna", 3, "alex", "first", "buyer", "Moscow", 150);
-        userMapping[0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db] = userStruct(1, "Ruslanov Ruslan Ruslanovich", 0, "rus", "second", "seller", "Saint Petersburg", 70);
-
-        allUsersArray = [0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2, 0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db];
+        allUsersArray = [0x5B38Da6a701c568545dCfcB03FcB875f56beddC4, 0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2, 0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db];
+   
+        allRequests.push(0);
     }
 
 
 
-    // Admin functionality
-    function changeRole(uint _id, string memory _role, uint _shopNumberOrZero) public {
-        require(checkOnAdmin(msg.sender) == 1, "u r not admin of this programm");
+    // Requests
+    struct requestForm {
+        uint requestId;
+        uint userId;
+
+        string roleToRequest;
+        bool requestIsOpen;
+    }
+
+    mapping (address => requestForm[]) public requestMapping;
+    address[] allRequestsOwners;
+    uint[] allRequests;
+
+    function requestForSeller() public onlyBuyers { requestAdd("seller"); }
+
+    function requestForBuyer(uint _shopId) public onlySellers { 
+        shopMapping[allShopArray[_shopId]].sellers_ids.push(getUserIdForAddress(msg.sender));
         
-        if (keccak256(abi.encodePacked(_role)) == keccak256(abi.encodePacked("seller")) || keccak256(abi.encodePacked(_role)) == keccak256(abi.encodePacked("buyer")) ) {
-            userMapping[allUsersArray[_id]].role = _role;
-            if (keccak256(abi.encodePacked(_role)) == keccak256(abi.encodePacked("buyer"))) {
-                userMapping[allUsersArray[_id]].shopNumber = _shopNumberOrZero;
-            }
-        } else {
-            console.log("Role undefined");
-        }
-    } 
-
-    function addNewAdming(address _newAdmin, string memory _newAdmingLogin, uint _newAdmingBalance, string memory _newAdminPassword) public {
-        require(checkOnAdmin(msg.sender) == 1, "u r not admin of this programm");
-
-        adminMapping[_newAdmin] = Admin(_newAdmingLogin, _newAdmingBalance, _newAdminPassword);
-        allAdmins.push(_newAdmin);
+        requestAdd("buyer"); 
     }
 
-    function addNewShop(address _newShopAddress, string memory _newShopCity, uint _newShopBalance, uint _newShopper) public {
-        require(checkOnAdmin(msg.sender) == 1, "u r not admin of this programm");
+    function requestForAdmin() public notAdmin { requestAdd("admin"); }
 
-        shopMapping[_newShopAddress] = shopStruct((allShopArray.length + 1), _newShopCity, _newShopBalance);
-        allShopArray.push(_newShopAddress);
+    function requestAdd(string memory _requestRole) internal {
+        uint id = allRequests.length;
 
-        changeRole(_newShopper, "buyer", allShopArray.length);
+        requestMapping[msg.sender].push(requestForm(id, getUserIdForAddress(msg.sender), _requestRole, true));
+        userMapping[msg.sender].userRequests.push(id);
+        if (checkAlreadyHadRequest(msg.sender) == 0) {allRequestsOwners.push(msg.sender);}
+        allRequests.push(id);
     }
 
-    function deleteShop (address _shopAddress) public {
-        require(checkOnAdmin(msg.sender) == 1, "u r not admin of this programm");
-
-        for (uint index = 0; index < allUsersArray.length; index++) {
-            if (userMapping[allUsersArray[index]].shopNumber == getShopNumber(_shopAddress)) {
-                userMapping[allUsersArray[index]].shopNumber = 0;
-                changeRole(index, "seller", 0);
+    function clearRequest(uint _requestId) internal  {
+        for (uint index = 0; index < allRequestsOwners.length; index++) {
+            for (uint j = 0; j < userMapping[allRequestsOwners[index]].userRequests.length; j++) {
+                if (userMapping[allRequestsOwners[index]].userRequests[j] == _requestId) {
+                    requestMapping[allRequestsOwners[index]][_requestId].requestIsOpen == false;
+                }
             }
         }
+    }
 
-        shopMapping[_shopAddress] = shopStruct(0, "null", 0);
-        delete allShopArray[getShopNumber(_shopAddress)];
+    ////// Admin functionality
+
+    function roleRequestAccept(uint _requestId) public onlyAdmins {
+        for (uint index = 0; index < allRequestsOwners.length; index++) {
+            for (uint j = 0; j < userMapping[allRequestsOwners[index]].userRequests.length; j++) {
+                if (userMapping[allRequestsOwners[index]].userRequests[j] == _requestId) {
+                    if (requestMapping[allRequestsOwners[index]][_requestId].requestIsOpen == false) {
+                        console.log("This request already closed!");
+                    } else {
+                        requestMapping[allRequestsOwners[index]][_requestId].requestIsOpen == false;
+
+                        changeRole(requestMapping[allRequestsOwners[index]][_requestId].userId, requestMapping[allRequestsOwners[index]][_requestId].roleToRequest);
+                    }
+                }
+            }
+        }
+    }
+
+    function roleRequestClose(uint _requestId) public onlyAdmins {
+        for (uint index = 0; index < allRequestsOwners.length; index++) {
+            for (uint j = 0; j < userMapping[allRequestsOwners[index]].userRequests.length; j++) {
+                if (userMapping[allRequestsOwners[index]].userRequests[j] == _requestId) {
+                    if (requestMapping[allRequestsOwners[index]][_requestId].requestIsOpen == false) {
+                        console.log("This request already closed!");
+                    } else {
+                        requestMapping[allRequestsOwners[index]][_requestId].requestIsOpen == false;
+                    }
+                }
+            }
+        }
+    }
+
+    function changeRole(uint _userId, string memory _role) internal {
+        userMapping[allUsersArray[_userId]].role = _role;
+    }
+
+    // Shop Management
+    function addNewShop(address _shopAddress, string memory _city) public onlyAdmins {
+        uint[] memory void;
+
+        shopMapping[_shopAddress] = shopStruct(allShopArray.length, _city, 100, void);
+        allShopArray.push(_shopAddress);
+    }
+
+    function deleteShop(uint _id) public onlyAdmins {
+        uint[] memory void;
+
+        for (uint index = 0; index < shopMapping[allShopArray[_id]].sellers_ids.length; index++) {
+            changeRole(shopMapping[allShopArray[_id]].sellers_ids[index], "seller");
+        }
+
+        shopMapping[allShopArray[_id]].number = 0;
+        shopMapping[allShopArray[_id]].city = "None";
+        shopMapping[allShopArray[_id]].balance = 0;
+        shopMapping[allShopArray[_id]].sellers_ids = void;
+
+        delete allShopArray[_id];
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // System Functions For Checks
-    function checkOnAdmin(address _itsadmin) internal  returns (uint) {
+    // System Functionaliti
+    modifier onlyAdmins() {
         uint flag = 0;
 
-        for (uint index = 0; index < allAdmins.length; index++) {
-            if (allAdmins[index] == _itsadmin) {
+        if (keccak256(abi.encodePacked(userMapping[msg.sender].role)) == keccak256(abi.encodePacked("admin"))) {
+            flag = 1;
+        }
+        
+        require(flag == 1, "u r not admin of this programm"); 
+        _;
+    }
+
+    modifier notAdmin() {
+        uint flag = 0;
+
+        if (keccak256(abi.encodePacked(userMapping[msg.sender].role)) != keccak256(abi.encodePacked("admin"))) {
+            flag = 1;
+        }
+        
+        require(flag == 1, "u r also admin of this programm"); 
+        _;
+    }
+
+    modifier onlySellers() {
+        uint flag = 0;
+
+        if (keccak256(abi.encodePacked(userMapping[msg.sender].role)) == keccak256(abi.encodePacked("seller"))) {
+            flag = 1;
+        }
+        
+        require(flag == 1, "u r not seller of this programm"); 
+        _;
+    }
+
+    modifier onlyBuyers() {
+        uint flag = 0;
+
+        if (keccak256(abi.encodePacked(userMapping[msg.sender].role)) == keccak256(abi.encodePacked("buyer"))) {
+            flag = 1;
+        }
+        
+        require(flag == 1, "u r not buyer of this programm"); 
+        _;
+    }
+
+    function getUserIdForAddress(address _userAddress) internal returns (uint) {
+        for (uint index = 0; index < allUsersArray.length; index++) {
+            if (allUsersArray[index] == _userAddress) {
+                return userMapping[allUsersArray[index]].id;
+            }
+        }
+    }
+
+    function getUserAddressForId(uint _userId) internal returns (address) {
+        for (uint index = 0; index < allUsersArray.length; index++) {
+            if (userMapping[allUsersArray[index]].id == _userId) {
+                console.log(allUsersArray[index]);
+                return allUsersArray[index];
+            }
+        }
+    }
+
+    function checkAlreadyHadRequest(address _userAddress) internal returns (uint) {
+        for (uint index = 0; index < allRequestsOwners.length; index++) {
+            if (_userAddress == allRequestsOwners[index]) {
+                return 1;
+            } else {return 0;}
+        }
+    }
+
+    function checkForAlreadyHaveRateOfThisShop(uint shopId) internal returns (uint) {
+        uint flag = 0;
+
+        for (uint index = 0; index < rates.length; index++) {
+            if (rates[index].shopNumber == shopId && rates[index].userId == getUserIdForAddress(msg.sender)) {
                 flag = 1;
             }
         }
 
         return flag;
-    }
-
-    function getShopNumber(address _shopAddress) internal returns (uint) {
-        uint number;
-
-        for (uint index = 0; index < allShopArray.length; index++) {
-            if (_shopAddress == allShopArray[index]) {
-                number = shopMapping[allShopArray[index]].number;
-            }
-        }
-
-        return number;
-    }
-
-    // System Functions For TESTING
-    function logAllShops() public {
-        for (uint index = 0; index < allShopArray.length + 1; index++) {
-            console.log(shopMapping[allShopArray[index]].number, shopMapping[allShopArray[index]].city, shopMapping[allShopArray[index]].balance);
-        }
-    }
-
-    function logAllRoles() public  {
-        for (uint index = 0; index < allUsersArray.length; index++) {
-            console.log(userMapping[allUsersArray[index]].id, userMapping[allUsersArray[index]].role);
-        }
     }
 }
