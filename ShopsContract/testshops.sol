@@ -27,6 +27,62 @@ contract Shops {
         address[] allBuyersAcceptsOwners;
     }
 
+    shopRates[] rates;
+
+    function addNewRate(uint _shopNumber, uint _shopRate, string memory _rateComment) public onlySellers {
+        // TODO CHECKS
+        
+        shopRates storage newRate = rates.push();
+
+        sellersComments storage selcom = newRate.sellers_comments.push();
+        buyersAccepts storage buyacc = newRate.buyers_accepts.push();
+
+        address[] memory void;
+
+        newRate.userId = getUserIdForAddress(msg.sender);
+        newRate.rateId = rates.length;
+        newRate.shopNumber = _shopNumber;
+        newRate.shopRate = _shopRate;
+        newRate.rateComment = _rateComment;
+        newRate.allSellersCommentsOwners = void;
+        newRate.allBuyersAcceptsOwners = void;
+    }
+
+    function addCommentToRate(uint _rateId, string memory _rateComment) public onlySellers returns (uint) {
+        require(getUserIdForAddress(msg.sender) != rates[_rateId].userId, "U owner of this rate");
+
+        for (uint index = 0; index < rates[_rateId].allSellersCommentsOwners.length; index++) {
+            if (rates[_rateId].allSellersCommentsOwners[index] == msg.sender) {
+                console.log("u already have comment of this rate");
+                return 0;
+            }
+        }
+
+        sellersComments storage newComment = rates[_rateId].sellers_comments.push();
+
+        newComment.owner = msg.sender;
+        newComment.comment = _rateComment;
+        return 1;
+    }
+
+    function acceptRate(uint _rateId, bool _accept) public onlyBuyers returns (uint) {
+        require(getUserIdForAddress(msg.sender) != rates[_rateId].userId, "U owner of this rate");
+
+        for (uint index = 0; index < rates[_rateId].allSellersCommentsOwners.length; index++) {
+            if (rates[_rateId].allBuyersAcceptsOwners[index] == msg.sender) {
+                console.log("u already accept of this rate");
+                return 0;
+            }
+        }
+
+        buyersAccepts storage accept = rates[_rateId].buyers_accepts.push();
+
+        accept.owner = msg.sender;
+        accept.isAccept = _accept;
+        return 1;
+    }
+    
+
     struct sellersComments {
         string comment;
 
@@ -34,17 +90,11 @@ contract Shops {
     }
 
     struct buyersAccepts {
-        bool isAccepts;
+        bool isAccept;
 
         address owner;
     }
     
-
-    // RatesSystem
-
-    function addNewShopRate(uint _shopNumber, uint _shopRate, string memory _rateComment) public onlyBuyers {
-
-    }
 
 
     struct shopStruct {
@@ -53,7 +103,6 @@ contract Shops {
         uint balance;
 
         uint[] sellers_ids;
-        shopRates[] rates;
     }
 
     mapping (address => shopStruct) public shopMapping;
@@ -85,14 +134,25 @@ contract Shops {
     // Constructor
     constructor() {
         uint[] memory void;
-        shopRates[] memory shopRatesVoid;
+
+        // shopRates[] memory shopRatesVoid;
+        // s
+
+        shopMapping[0x0A098Eda01Ce92ff4A4CCb7A4fFFb5A43EBC70DC].number = 1;
+        shopMapping[0x0A098Eda01Ce92ff4A4CCb7A4fFFb5A43EBC70DC].city = "Saint Petersburg";
+        shopMapping[0x0A098Eda01Ce92ff4A4CCb7A4fFFb5A43EBC70DC].balance = 100;
+        shopMapping[0x0A098Eda01Ce92ff4A4CCb7A4fFFb5A43EBC70DC].sellers_ids = void;
+
+        // Rates storage RatesVoid = 
+
+        // shopMapping[0x0A098Eda01Ce92ff4A4CCb7A4fFFb5A43EBC70DC].rates = new
 
         
-        shopMapping[0x0A098Eda01Ce92ff4A4CCb7A4fFFb5A43EBC70DC] = shopStruct(1,     "Saint Petersburg",     100, void, shopRatesVoid);
-        shopMapping[0xCA35b7d915458EF540aDe6068dFe2F44E8fa733c] = shopStruct(2,     "Dmitrov",              100, void, shopRatesVoid);
-        shopMapping[0x14723A09ACff6D2A60DcdF7aA4AFf308FDDC160C] = shopStruct(3,     "Moscow",               100, void, shopRatesVoid);
-        shopMapping[0x583031D1113aD414F02576BD6afaBfb302140225] = shopStruct(4,     "Arkhangelsk",          100, void, shopRatesVoid);
-        shopMapping[0xdD870fA1b7C4700F2BD7f44238821C26f7392148] = shopStruct(5,     "Irkutsk",              100, void, shopRatesVoid);
+        shopMapping[0x0A098Eda01Ce92ff4A4CCb7A4fFFb5A43EBC70DC] = shopStruct(1,     "Saint Petersburg",     100, void);
+        shopMapping[0xCA35b7d915458EF540aDe6068dFe2F44E8fa733c] = shopStruct(2,     "Dmitrov",              100, void);
+        shopMapping[0x14723A09ACff6D2A60DcdF7aA4AFf308FDDC160C] = shopStruct(3,     "Moscow",               100, void);
+        shopMapping[0x583031D1113aD414F02576BD6afaBfb302140225] = shopStruct(4,     "Arkhangelsk",          100, void);
+        shopMapping[0xdD870fA1b7C4700F2BD7f44238821C26f7392148] = shopStruct(5,     "Irkutsk",              100, void);
 
         shopMapping[0xdD870fA1b7C4700F2BD7f44238821C26f7392148].sellers_ids = [1];
 
@@ -197,9 +257,8 @@ contract Shops {
     // Shop Management
     function addNewShop(address _shopAddress, string memory _city) public onlyAdmins {
         uint[] memory void;
-        shopRates[] memory shopRatesVoid;
 
-        shopMapping[_shopAddress] = shopStruct(allShopArray.length, _city, 100, void, shopRatesVoid);
+        shopMapping[_shopAddress] = shopStruct(allShopArray.length, _city, 100, void);
         allShopArray.push(_shopAddress);
     }
 
@@ -263,12 +322,6 @@ contract Shops {
         require(flag == 1, "u r not buyer of this programm"); 
         _;
     }
-
-    modifier requestNotClosed() {
-        // TODO
-        _;
-    }
-
 
     function getUserIdForAddress(address _userAddress) internal returns (uint) {
         for (uint index = 0; index < allUsersArray.length; index++) {
