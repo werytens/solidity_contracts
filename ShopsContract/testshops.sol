@@ -101,13 +101,13 @@ contract Shops {
     uint[] allRequests;
 
     function requestForSeller() public onlyBuyers { requestAdd("seller"); }
-    function requestForBuyer() public onlySellers { 
-        // Input for something shop
-        // TODO
-        
+
+    function requestForBuyer(uint _shopId) public onlySellers { 
+        shopMapping[allShopArray[_shopId]].sellers_ids.push(getUserIdForAddress(msg.sender));
         
         requestAdd("buyer"); 
-        }
+    }
+
     function requestForAdmin() public notAdmin { requestAdd("admin"); }
 
     function requestAdd(string memory _requestRole) internal {
