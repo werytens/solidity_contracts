@@ -131,6 +131,7 @@ contract Shops {
 
     mapping (address => userStruct) public userMapping;
     address[] allUsersArray;
+    
 
     // Constructor
     constructor() {
@@ -168,7 +169,14 @@ contract Shops {
         allRequests.push(0);
     }
 
+    function registerUser(string memory _userLogin, string memory _userPassword, string memory _userPasswordRepeat, string memory _fcs, string memory _userCity) public {
+        require(keccak256(abi.encodePacked(_userPassword)) == keccak256(abi.encodePacked(_userPasswordRepeat)), "ur password (repeated) invalid.");
+        require(checkLoginForTaken(_userLogin) == 0, "ur login is taken");
+        require(checkUserAlreadyRegister(msg.sender) == 0, "u already registered");
 
+        uint[] memory void;
+        userMapping[msg.sender] = userStruct(allUsersArray.length, _fcs, _userLogin, keccak256(abi.encodePacked(_userPassword)), "seller", _userCity, 100, void);
+    }
 
     // Requests
     struct requestForm {
@@ -347,6 +355,30 @@ contract Shops {
 
         for (uint index = 0; index < rates.length; index++) {
             if (rates[index].shopNumber == shopId && rates[index].userId == getUserIdForAddress(msg.sender)) {
+                flag = 1;
+            }
+        }
+
+        return flag;
+    }
+
+    function checkLoginForTaken(string memory _userLogin) internal returns (uint) {
+        uint flag = 0;
+        
+        for (uint index = 0; index < allUsersArray.length; index++) {
+            if (keccak256(abi.encodePacked(userMapping[allUsersArray[index]].login)) == keccak256(abi.encodePacked(_userLogin))) {
+                flag = 1;
+            }
+        }
+
+        return flag;
+    }
+
+    function checkUserAlreadyRegister(address _userAddress) internal returns (uint) {
+        uint flag = 0;
+
+        for (uint index = 0; index < allUsersArray.length; index++) {
+            if (allUsersArray[index] == msg.sender) {
                 flag = 1;
             }
         }
