@@ -137,34 +137,39 @@ contract Shops {
     constructor() {
         uint[] memory void;
 
-        shopMapping[0x0A098Eda01Ce92ff4A4CCb7A4fFFb5A43EBC70DC].number = 1;
-        shopMapping[0x0A098Eda01Ce92ff4A4CCb7A4fFFb5A43EBC70DC].city = "Saint Petersburg";
-        shopMapping[0x0A098Eda01Ce92ff4A4CCb7A4fFFb5A43EBC70DC].balance = 100;
-        shopMapping[0x0A098Eda01Ce92ff4A4CCb7A4fFFb5A43EBC70DC].sellers_ids = void;
+        address shop1 = 0x4e8AABbc87bf85aa2bB51e278396389D833d59d9;
+        address shop2 = 0x31100DfA60058875574Fe1926f2e167a1fe8808e;
+        address shop3 = 0xb8229f27b39e3Ab014C8Acb0dcE3643e4AcB5FEB;
+        address shop4 = 0x7cbE550908139e252fC2c002e0CA48b84cF8dDA4;
+        address shop5 = 0xCC22278D6172a2f9DEcFaf837D8D196d2f41B681;
 
-        
-        shopMapping[0x0A098Eda01Ce92ff4A4CCb7A4fFFb5A43EBC70DC] = shopStruct(1,     "Saint Petersburg",     100, void);
-        shopMapping[0xCA35b7d915458EF540aDe6068dFe2F44E8fa733c] = shopStruct(2,     "Dmitrov",              100, void);
-        shopMapping[0x14723A09ACff6D2A60DcdF7aA4AFf308FDDC160C] = shopStruct(3,     "Moscow",               100, void);
-        shopMapping[0x583031D1113aD414F02576BD6afaBfb302140225] = shopStruct(4,     "Arkhangelsk",          100, void);
-        shopMapping[0xdD870fA1b7C4700F2BD7f44238821C26f7392148] = shopStruct(5,     "Irkutsk",              100, void);
 
-        shopMapping[0xdD870fA1b7C4700F2BD7f44238821C26f7392148].sellers_ids = [1];
+        shopMapping[shop1] = shopStruct(1,     "Saint Petersburg",     100, void);
+        shopMapping[shop2] = shopStruct(2,     "Dmitrov",              100, void);
+        shopMapping[shop3] = shopStruct(3,     "Moscow",               100, void);
+        shopMapping[shop4] = shopStruct(4,     "Arkhangelsk",          100, void);
+        shopMapping[shop5] = shopStruct(5,     "Irkutsk",              100, void);
+
+        shopMapping[shop5].sellers_ids = [1];
 
         allShopArray = [
-            0x0A098Eda01Ce92ff4A4CCb7A4fFFb5A43EBC70DC, 
-            0xCA35b7d915458EF540aDe6068dFe2F44E8fa733c, 
-            0x14723A09ACff6D2A60DcdF7aA4AFf308FDDC160C, 
-            0x583031D1113aD414F02576BD6afaBfb302140225, 
-            0xdD870fA1b7C4700F2BD7f44238821C26f7392148
+            shop1, 
+            shop2, 
+            shop3, 
+            shop4, 
+            shop5
         ];
 
-        
-        userMapping[0x5B38Da6a701c568545dCfcB03FcB875f56beddC4] = userStruct(0, "Dmitriy Dmitriev Dmitrievuch",          "dimon",    keccak256("adminPassword"),     "admin",     "Kaluga",           100, void);
-        userMapping[0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2] = userStruct(1, "Alexandrova Alexandra Alexandrovna",    "alex",     keccak256("firstPassword"),     "buyer",     "Moscow",           100, void);
-        userMapping[0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db] = userStruct(2, "Ruslanov Ruslan Ruslanovich",           "rus",      keccak256("secondPassword"),    "seller",    "Saint Petersburg", 100, void);
+        address user1 = 0xAAE559A97B0436e1f8Bc0687d7145C3d45923635;
+        address user2 = 0xd8Ecf901279BcD2286Eaadca95698E33CE16d2dC;
+        address user3 = 0x3dB5D3C0aE829e8C9040dCD255be1E7E974cbeb3;
 
-        allUsersArray = [0x5B38Da6a701c568545dCfcB03FcB875f56beddC4, 0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2, 0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db];
+        
+        userMapping[user1] = userStruct(0, "Dmitriy Dmitriev Dmitrievuch",          "dimon",    keccak256("adminPassword"),     "admin",     "Kaluga",           100, void);
+        userMapping[user2] = userStruct(1, "Alexandrova Alexandra Alexandrovna",    "alex",     keccak256("firstPassword"),     "buyer",     "Moscow",           100, void);
+        userMapping[user3] = userStruct(2, "Ruslanov Ruslan Ruslanovich",           "rus",      keccak256("secondPassword"),    "seller",    "Saint Petersburg", 100, void);
+
+        allUsersArray = [user1, user2, user3];
    
         allRequests.push(0);
     }
@@ -385,4 +390,29 @@ contract Shops {
 
         return flag;
     }
+
+    // For Interface Functions
+
+    function getShopCount() public view returns (uint) {
+        return allShopArray.length;
+    }
+
+    function getInfoAboutShop(uint _shopId) public view returns (string memory) {
+        return shopMapping[allShopArray[_shopId]].city;
+    }
+
+    // struct shopRates {
+    //     uint userId;
+    //     uint rateId;
+
+    //     uint shopNumber;
+    //     uint shopRate;
+    //     string rateComment;
+
+    //     sellersComments[] sellers_comments;
+    //     buyersAccepts[] buyers_accepts;
+
+    //     address[] allSellersCommentsOwners;
+    //     address[] allBuyersAcceptsOwners;
+    // }
 }
