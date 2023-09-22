@@ -1,8 +1,6 @@
 pragma solidity >0.5.0;
 // SPDX-License-Identifier: GPL-3.0
 
-//Base Commit
-
 /**
 * @title Transfer
 * @dev Store & retrieve value in a variable
@@ -22,7 +20,7 @@ contract Transfer {
         address target;
         uint value;
         uint status;
-        uint secret_code;
+        bytes32 secret_code;
     }
 
     mapping (address => User) public user_mapping;
@@ -54,7 +52,7 @@ contract Transfer {
         users.push(user_address); 
     }
 
-    function add_transfer(uint value, address target, uint code) public payable {
+    function add_transfer(uint value, address target, string memory code) public payable {
         require(msg.value == value, "uncorrect value");
         require(target != msg.sender, "u can pay to urself");
 
@@ -72,7 +70,7 @@ contract Transfer {
 
         require(flag == 2, "someone user not registered");
 
-        transfers.push(Transfer(msg.sender, target, msg.value, 0, code));
+        transfers.push(Transfer(msg.sender, target, msg.value, 0, keccak256(abi.encodePacked(code))));
     }
     
     function cancel_transfer(uint id) public {
@@ -88,7 +86,7 @@ contract Transfer {
         require(transfers[id].target == msg.sender, "u cant");
         require(transfers[id].status == 0, "transfer alrd accepted or transfer canceled");
 
-        if (code == transfers[id].secret_code) {
+        if (keccak256(abi.encodePacked(code)) == keccak256(abi.encodePacked(transfers[id].secret_code))) {
             payable(msg.sender).transfer(transfers[id].value);
             transfers[id].status = 1;
         } else {
